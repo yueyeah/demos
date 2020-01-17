@@ -53,6 +53,7 @@ public:
       initial_capacity,
       &allocator);
     if (ret != RCL_RET_OK) {
+      printf("failed to initialise serialized message");
       throw std::runtime_error("failed to initialize serialized message");
     }
 
