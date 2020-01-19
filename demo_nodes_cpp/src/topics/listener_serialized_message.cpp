@@ -65,6 +65,7 @@ public:
         // which is responsible on how to convert this data into a ROS2 message.
         auto ret = rmw_deserialize(msg.get(), string_ts, string_msg.get());
         if (ret != RMW_RET_OK) {
+	  printf("failed to deserialize serialized message\n");
           fprintf(stderr, "failed to deserialize serialized message\n");
           return;
         }
