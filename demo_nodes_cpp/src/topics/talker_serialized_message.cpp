@@ -111,6 +111,7 @@ public:
         }
         printf("\n");
 	printf("talker hmac: %x\n", *serialized_msg_.hmac);
+	printf("talker hmac_length: %d\n", serialized_msg_.hmac_length);
 
         pub_->publish(serialized_msg_);
       };

@@ -56,6 +56,7 @@ public:
         }
         printf("\n");
 	printf("listener serialized_message buffer: %x\n", *msg->buffer);
+	printf("listener serialized_message hmac_length: %d\n", msg->hmac_length);
 
         // In order to deserialize the message we have to manually create a ROS2
         // message in which we want to convert the serialized data.
