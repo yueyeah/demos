@@ -97,7 +97,7 @@ public:
         // its binary representation (serialized_msg)
         ret = rmw_serialize(string_msg.get(), string_ts, &serialized_msg_);
         if (ret != RMW_RET_OK) {
-          fprintf(stderr, "failed to serialize serialized message\n");
+          fprintf(stderr, "talker_serialized_message: failed to serialize serialized message\n");
           return;
         }
 
@@ -110,6 +110,7 @@ public:
           printf("%02x ", serialized_msg_.buffer[i]);
         }
         printf("\n");
+	printf("talker hmac: %x\n", *serialized_msg_.hmac);
 
         pub_->publish(serialized_msg_);
       };

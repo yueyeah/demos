@@ -50,11 +50,12 @@ public:
         // Print the serialized data message in HEX representation
         // This output corresponds to what you would see in e.g. Wireshark
         // when tracing the RTPS packets.
-        std::cout << "I heard data of length: " << msg->buffer_length << std::endl;
+        std::cout << "I heard data buffer of length: " << msg->buffer_length << std::endl;
         for (size_t i = 0; i < msg->buffer_length; ++i) {
           printf("%02x ", msg->buffer[i]);
         }
         printf("\n");
+	printf("listener serialized_message buffer: %x\n", *msg->buffer);
 
         // In order to deserialize the message we have to manually create a ROS2
         // message in which we want to convert the serialized data.
@@ -65,7 +66,7 @@ public:
         // which is responsible on how to convert this data into a ROS2 message.
         auto ret = rmw_deserialize(msg.get(), string_ts, string_msg.get());
         if (ret != RMW_RET_OK) {
-	  printf("failed to deserialize serialized message\n");
+	  printf("listener failed to deserialize serialized message\n");
           fprintf(stderr, "failed to deserialize serialized message\n");
           return;
         }
