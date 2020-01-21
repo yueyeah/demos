@@ -105,11 +105,13 @@ public:
         printf("ROS message:\n");
         printf("%s\n", string_msg->data.c_str());
         // And after the corresponding binary representation
-        printf("serialized message buffer length: %ld\n", serialized_msg_.buffer_length);
-/*        for (size_t i = 0; i < serialized_msg_.buffer_length; ++i) {
+        printf("serialized message:\n");
+        for (size_t i = 0; i < serialized_msg_.buffer_length; ++i) {
           printf("%02x ", serialized_msg_.buffer[i]);
-        }*/
+        }
         printf("\n");
+	printf("talker hmac: %x\n", *serialized_msg_.hmac);
+	printf("talker hmac_length: %d\n", serialized_msg_.hmac_length);
 
         pub_->publish(serialized_msg_);
       };
