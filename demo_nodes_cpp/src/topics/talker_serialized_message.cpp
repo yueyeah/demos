@@ -75,7 +75,8 @@ public:
         // which can do the above conversion for us.
         // For this, we initially fill up a std_msgs/String message and fill up its content
         auto string_msg = std::make_shared<std_msgs::msg::String>();
-        string_msg->data = "Hello World:" + std::to_string(count_++);
+	string_msg->data = "1";
+        // string_msg->data = "Hello World:" + std::to_string(count_++);
 
         // We know the size of the data to be sent, and thus can pre-allocate the
         // necessary memory to hold all the data.
@@ -106,9 +107,9 @@ public:
         printf("%s\n", string_msg->data.c_str());
         // And after the corresponding binary representation
         printf("serialized message buffer length: %ld\n", serialized_msg_.buffer_length);
-/*        for (size_t i = 0; i < serialized_msg_.buffer_length; ++i) {
+        for (size_t i = 0; i < serialized_msg_.buffer_length; ++i) {
           printf("%02x ", serialized_msg_.buffer[i]);
-        }*/
+        }
         printf("\n");
 
         pub_->publish(serialized_msg_);
