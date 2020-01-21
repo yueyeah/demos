@@ -51,12 +51,10 @@ public:
         // This output corresponds to what you would see in e.g. Wireshark
         // when tracing the RTPS packets.
         std::cout << "I heard data buffer of length: " << msg->buffer_length << std::endl;
-        for (size_t i = 0; i < msg->buffer_length; ++i) {
+        /*for (size_t i = 0; i < msg->buffer_length; ++i) {
           printf("%02x ", msg->buffer[i]);
         }
-        printf("\n");
-	printf("listener serialized_message buffer: %x\n", *msg->buffer);
-	printf("listener serialized_message hmac_length: %d\n", msg->hmac_length);
+        printf("\n");*/
 
         // In order to deserialize the message we have to manually create a ROS2
         // message in which we want to convert the serialized data.
