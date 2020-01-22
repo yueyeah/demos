@@ -15,6 +15,8 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <time.h>
+#include <stdlib.h>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -75,8 +77,8 @@ public:
         // which can do the above conversion for us.
         // For this, we initially fill up a std_msgs/String message and fill up its content
         auto string_msg = std::make_shared<std_msgs::msg::String>();
-	string_msg->data = "1";
         // string_msg->data = "Hello World:" + std::to_string(count_++);
+	string_msg->data = "Hello World: " + std::to_string(rand_int++);
 
         // We know the size of the data to be sent, and thus can pre-allocate the
         // necessary memory to hold all the data.
@@ -132,6 +134,7 @@ public:
 
 private:
   size_t count_ = 1;
+  int rand_int = rand()%1000;
   rcl_serialized_message_t serialized_msg_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
@@ -139,6 +142,9 @@ private:
 
 int main(int argc, char * argv[])
 {
+  // Generate seed for random number generator
+  srand(time(0));
+
   // Force flush of the stdout buffer.
   // This ensures a correct sync of all prints
   // even when executed simultaneously within the launch file.
