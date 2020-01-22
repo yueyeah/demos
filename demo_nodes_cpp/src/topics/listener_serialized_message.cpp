@@ -45,7 +45,7 @@ public:
     // message to the callback. We can then further deserialize it and convert it into
     // a ros2 compliant message.
     auto callback =
-      [](const std::shared_ptr<rmw_serialized_message_t> msg) -> void
+      [this](const std::shared_ptr<rmw_serialized_message_t> msg) -> void
       {
         // Print the serialized data message in HEX representation
         // This output corresponds to what you would see in e.g. Wireshark
@@ -61,6 +61,23 @@ public:
         auto string_msg = std::make_shared<std_msgs::msg::String>();
         auto string_ts =
           rosidl_typesupport_cpp::get_message_type_support_handle<std_msgs::msg::String>();
+	
+        // get the counter from serialized_message->buffer and check
+	size_t received_rand_int_idx = msg.get()->buffer_length - 3;
+	int received_rand_int = (int) msg.get()->buffer[received_rand_int_idx];
+	printf("listener serialized_msg->counter: %dend\n", msg.get()->counter);
+	printf("listener received_rand_int: %dend\n", received_rand_int);
+	if (!is_rand_int_set) {
+	  is_rand_int_set = true;
+	  rand_int_counter = received_rand_int;
+	} else {
+	  if (received_rand_int != rand_int_counter + 1) {
+	    printf("Counter not synced. Possible replay attack.\n");
+	  } else {
+	    rand_int_counter = received_rand_int;
+	  }
+	}
+
         // The rmw_deserialize function takes the serialized data and a corresponding typesupport
         // which is responsible on how to convert this data into a ROS2 message.
         auto ret = rmw_deserialize(msg.get(), string_ts, string_msg.get());
@@ -68,6 +85,7 @@ public:
           fprintf(stderr, "failed to deserialize serialized message\n");
           return;
         }
+
         // Finally print the ROS2 message data
         std::cout << "serialized data after deserialization: " << string_msg->data << std::endl;
       };
@@ -81,6 +99,11 @@ public:
 
 private:
   rclcpp::Subscription<rmw_serialized_message_t>::SharedPtr sub_;
+  
+  // is_rand_int_set checks if the counter has been set,
+  // rand_int_counter is the actual counter
+  bool is_rand_int_set = false;
+  int rand_int_counter;
 };
 
 int main(int argc, char * argv[])

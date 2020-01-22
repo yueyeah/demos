@@ -77,7 +77,10 @@ public:
         // which can do the above conversion for us.
         // For this, we initially fill up a std_msgs/String message and fill up its content
         auto string_msg = std::make_shared<std_msgs::msg::String>();
+	// The line below is the original message with the original counter
         // string_msg->data = "Hello World:" + std::to_string(count_++);
+	
+	// rand_int is a counter generated from srand(time(0)) in main()
 	string_msg->data = "Hello World: " + std::to_string(rand_int++);
 
         // We know the size of the data to be sent, and thus can pre-allocate the
@@ -93,6 +96,10 @@ public:
         if (ret != RCL_RET_OK) {
           throw std::runtime_error("failed to resize serialized message");
         }
+
+	// pass the rand_int counter to the rmw_serialize function 
+	// by inserting into the serialized_msg_'s counter field
+	serialized_msg_.counter = rand_int;
 
         auto string_ts =
           rosidl_typesupport_cpp::get_message_type_support_handle<std_msgs::msg::String>();
