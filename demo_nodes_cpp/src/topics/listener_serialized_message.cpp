@@ -50,7 +50,7 @@ public:
         // Print the serialized data message in HEX representation
         // This output corresponds to what you would see in e.g. Wireshark
         // when tracing the RTPS packets.
-        std::cout << "I heard data buffer of length: " << msg->buffer_length << std::endl;
+        std::cout << "\nI heard data buffer of length: " << msg->buffer_length << std::endl;
         for (size_t i = 0; i < msg->buffer_length; ++i) {
           printf("%02x ", msg->buffer[i]);
         }
@@ -65,7 +65,6 @@ public:
         // get the counter from serialized_message->buffer and check
 	size_t received_rand_int_idx = msg.get()->buffer_length - 3;
 	int received_rand_int = (int) msg.get()->buffer[received_rand_int_idx];
-	printf("listener serialized_msg->counter: %dend\n", msg.get()->counter);
 	printf("listener received_rand_int: %dend\n", received_rand_int);
 	if (!is_rand_int_set) {
 	  is_rand_int_set = true;
@@ -78,19 +77,20 @@ public:
 	  }
 	}
 
-	// counts up till fixed number of messages
-	msg_counter++;
-	if (msg_counter == 1000) {
-		this->~SerializedMessageListener();
-	}
-
         // The rmw_deserialize function takes the serialized data and a corresponding typesupport
         // which is responsible on how to convert this data into a ROS2 message.
         auto ret = rmw_deserialize(msg.get(), string_ts, string_msg.get());
         if (ret != RMW_RET_OK) {
           fprintf(stderr, "failed to deserialize serialized message\n");
           return;
+	
         }
+	// counts up till fixed number of messages
+	msg_counter++;
+	if (msg_counter == 999) {
+		rclcpp::shutdown();
+	}
+
 
         // Finally print the ROS2 message data
         std::cout << "serialized data after deserialization: " << string_msg->data << std::endl;

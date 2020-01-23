@@ -78,16 +78,10 @@ public:
         // For this, we initially fill up a std_msgs/String message and fill up its content
         auto string_msg = std::make_shared<std_msgs::msg::String>();
 	// The line below is the original message with the original counter
-        // string_msg->data = "Hello World:" + std::to_string(count_++);
+        // string_msg->data = "\nHello World:" + std::to_string(count_++);
 	
 	// rand_int is a counter generated from srand(time(0)) in main()
-	string_msg->data = "Hello World: " + std::to_string(rand_int++);
-
-	// stops emitting messages after a fixed number
-        count_++;
-	if (count_ == 1000) {
-		this->~SerializedMessageTalker();
-	}
+	string_msg->data = "\nHello World: " + std::to_string(rand_int++);
 
         // We know the size of the data to be sent, and thus can pre-allocate the
         // necessary memory to hold all the data.
@@ -128,6 +122,13 @@ public:
         printf("\n");
 
         pub_->publish(serialized_msg_);
+
+	// stops emitting messages after a fixed number
+        count_++;
+	if (count_ == 1000) {
+		rclcpp::shutdown();	
+	}
+
       };
 
     rclcpp::QoS qos(rclcpp::KeepLast(7));
@@ -146,7 +147,7 @@ public:
   }
 
 private:
-  size_t count_ = 1;
+  size_t count_ = 0;
   int rand_int = rand()%1000;
   rcl_serialized_message_t serialized_msg_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
