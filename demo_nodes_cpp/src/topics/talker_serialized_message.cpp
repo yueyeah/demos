@@ -83,6 +83,12 @@ public:
 	// rand_int is a counter generated from srand(time(0)) in main()
 	string_msg->data = "Hello World: " + std::to_string(rand_int++);
 
+	// stops emitting messages after a fixed number
+        count_++;
+	if (count_ == 1000) {
+		this->~SerializedMessageTalker();
+	}
+
         // We know the size of the data to be sent, and thus can pre-allocate the
         // necessary memory to hold all the data.
         // This is specifically interesting to do here, because this means
@@ -128,7 +134,7 @@ public:
     pub_ = this->create_publisher<std_msgs::msg::String>(topic_name, qos);
 
     // Use a timer to schedule periodic message publishing.
-    timer_ = this->create_wall_timer(1s, publish_message);
+    timer_ = this->create_wall_timer(0.1s, publish_message);
   }
 
   ~SerializedMessageTalker()

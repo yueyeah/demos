@@ -78,6 +78,12 @@ public:
 	  }
 	}
 
+	// counts up till fixed number of messages
+	msg_counter++;
+	if (msg_counter == 1000) {
+		this->~SerializedMessageListener();
+	}
+
         // The rmw_deserialize function takes the serialized data and a corresponding typesupport
         // which is responsible on how to convert this data into a ROS2 message.
         auto ret = rmw_deserialize(msg.get(), string_ts, string_msg.get());
@@ -104,6 +110,7 @@ private:
   // rand_int_counter is the actual counter
   bool is_rand_int_set = false;
   int rand_int_counter;
+  int msg_counter = 0;
 };
 
 int main(int argc, char * argv[])
