@@ -63,6 +63,7 @@ public:
     auto publish_message =
       [this]() -> void
       {
+        printf("\nTalker publishing:\n");
         // In this example we send a std_msgs/String as serialized data.
         // This is the manual CDR serialization of a string message with the content of
         // Hello World: <count_> equivalent to talker example.
@@ -78,10 +79,10 @@ public:
         // For this, we initially fill up a std_msgs/String message and fill up its content
         auto string_msg = std::make_shared<std_msgs::msg::String>();
 	// The line below is the original message with the original counter
-        // string_msg->data = "\nHello World:" + std::to_string(count_++);
+        string_msg->data = "\nHello World:" + std::to_string(count_++);
 	
 	// rand_int is a counter generated from srand(time(0)) in main()
-	string_msg->data = "\nHello World: " + std::to_string(rand_int++);
+	// string_msg->data = "\nHello World: " + std::to_string(rand_int++);
 
         // We know the size of the data to be sent, and thus can pre-allocate the
         // necessary memory to hold all the data.
@@ -97,10 +98,6 @@ public:
           throw std::runtime_error("failed to resize serialized message");
         }
 
-	// pass the rand_int counter to the rmw_serialize function 
-	// by inserting into the serialized_msg_'s counter field
-	serialized_msg_.counter = rand_int;
-
         auto string_ts =
           rosidl_typesupport_cpp::get_message_type_support_handle<std_msgs::msg::String>();
         // Given the correct typesupport, we can convert our ROS2 message into
@@ -112,7 +109,7 @@ public:
         }
 
         // For demonstration we print the ROS2 message format
-        printf("ROS message:\n");
+        printf("ROS message:");
         printf("%s\n", string_msg->data.c_str());
         // And after the corresponding binary representation
         printf("serialized message buffer length: %ld\n", serialized_msg_.buffer_length);
@@ -124,7 +121,6 @@ public:
         pub_->publish(serialized_msg_);
 
 	// stops emitting messages after a fixed number
-        count_++;
 	if (count_ == 1000) {
 		rclcpp::shutdown();	
 	}
@@ -135,7 +131,7 @@ public:
     pub_ = this->create_publisher<std_msgs::msg::String>(topic_name, qos);
 
     // Use a timer to schedule periodic message publishing.
-    timer_ = this->create_wall_timer(0.1s, publish_message);
+    timer_ = this->create_wall_timer(1s, publish_message);
   }
 
   ~SerializedMessageTalker()
@@ -148,7 +144,6 @@ public:
 
 private:
   size_t count_ = 0;
-  int rand_int = rand()%1000;
   rcl_serialized_message_t serialized_msg_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;

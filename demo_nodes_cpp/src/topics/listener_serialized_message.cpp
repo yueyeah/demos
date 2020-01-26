@@ -47,10 +47,11 @@ public:
     auto callback =
       [this](const std::shared_ptr<rmw_serialized_message_t> msg) -> void
       {
+        printf("\nListener listening:\n");
         // Print the serialized data message in HEX representation
         // This output corresponds to what you would see in e.g. Wireshark
         // when tracing the RTPS packets.
-        std::cout << "\nI heard data buffer of length: " << msg->buffer_length << std::endl;
+        std::cout << "I heard data buffer of length: " << msg->buffer_length << std::endl;
         for (size_t i = 0; i < msg->buffer_length; ++i) {
           printf("%02x ", msg->buffer[i]);
         }
@@ -62,21 +63,6 @@ public:
         auto string_ts =
           rosidl_typesupport_cpp::get_message_type_support_handle<std_msgs::msg::String>();
 	
-        // get the counter from serialized_message->buffer and check
-	size_t received_rand_int_idx = msg.get()->buffer_length - 3;
-	int received_rand_int = (int) msg.get()->buffer[received_rand_int_idx];
-	printf("listener received_rand_int: %dend\n", received_rand_int);
-	if (!is_rand_int_set) {
-	  is_rand_int_set = true;
-	  rand_int_counter = received_rand_int;
-	} else {
-	  if (received_rand_int != rand_int_counter + 1) {
-	    printf("Counter not synced. Possible replay attack.\n");
-	  } else {
-	    rand_int_counter = received_rand_int;
-	  }
-	}
-
         // The rmw_deserialize function takes the serialized data and a corresponding typesupport
         // which is responsible on how to convert this data into a ROS2 message.
         auto ret = rmw_deserialize(msg.get(), string_ts, string_msg.get());
@@ -106,10 +92,6 @@ public:
 private:
   rclcpp::Subscription<rmw_serialized_message_t>::SharedPtr sub_;
   
-  // is_rand_int_set checks if the counter has been set,
-  // rand_int_counter is the actual counter
-  bool is_rand_int_set = false;
-  int rand_int_counter;
   int msg_counter = 0;
 };
 
