@@ -94,7 +94,7 @@ public:
         auto message_payload_length = static_cast<size_t>(string_msg->data.size());
         auto ret = rmw_serialized_message_resize(
           &serialized_msg_, message_header_length + message_payload_length);
-        if (ret != RCL_RET_OK) {
+        if (ret != RMW_RET_OK) {
           throw std::runtime_error("failed to resize serialized message");
         }
 
@@ -107,6 +107,16 @@ public:
           fprintf(stderr, "talker_serialized_message: failed to serialize serialized message\n");
           return;
         }
+	
+	// change the last byte to the rand_int_counter
+	int last_idx = serialized_msg_.buffer_length - 1;
+	printf("Talker: last byte before changing: %02x\n", serialized_msg_.buffer[last_idx]);
+	memcpy(&serialized_msg_.buffer[last_idx], &rand_int_counter, 1);
+	printf("Talker: rand_int_counter: %d, %02x\n", rand_int_counter, rand_int_counter);
+	printf("Talker: rand_int at last_idx: %d, %02x\n", serialized_msg_.buffer[last_idx], serialized_msg_.buffer[last_idx]);
+	// increment the rand_int_counter for the next iteration
+	rand_int_counter++;
+	rand_int_counter %= 256;
 
         // For demonstration we print the ROS2 message format
         printf("ROS message:");
@@ -144,6 +154,7 @@ public:
 
 private:
   size_t count_ = 0;
+  int rand_int_counter = rand()%256;
   rcl_serialized_message_t serialized_msg_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;

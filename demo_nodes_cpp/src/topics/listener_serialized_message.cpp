@@ -62,7 +62,33 @@ public:
         auto string_msg = std::make_shared<std_msgs::msg::String>();
         auto string_ts =
           rosidl_typesupport_cpp::get_message_type_support_handle<std_msgs::msg::String>();
-	
+
+	// Check against the rand_int_counter for replay attack
+        int actual_ser_msg_len = (int) msg->buffer[0];
+        int received_rand_int_counter = msg->buffer[actual_ser_msg_len - 1];
+	if (is_rand_int_counter_set){
+	  if (rand_int_counter == received_rand_int_counter) {
+            printf("Listener: rand_int_counter OK: %d\n", rand_int_counter);
+	  } else {
+	    printf("Listener: rand_int_counter not OK, possible replay attack: %d\n", rand_int_counter);
+	  } 
+	  rand_int_counter++;
+	  rand_int_counter %= 256;
+	} else {
+	  rand_int_counter = received_rand_int_counter;
+	  rand_int_counter++;
+	  rand_int_counter %= 256;
+	  is_rand_int_counter_set = true;
+	  printf("Listener: set rand_int_counter: %d\n", rand_int_counter);
+	}
+
+	// change the last byte to x00 byte so that hmac can be 
+	// computed correctly
+        int last_idx = msg->buffer[0] - 1;
+	printf("Listener: last_idx content before change: %02x\n", msg->buffer[last_idx]);
+	msg->buffer[last_idx] = (unsigned char) 0;
+	printf("Listener: last_idx, content: %d, %02x\n", last_idx, msg->buffer[last_idx]);
+
         // The rmw_deserialize function takes the serialized data and a corresponding typesupport
         // which is responsible on how to convert this data into a ROS2 message.
         auto ret = rmw_deserialize(msg.get(), string_ts, string_msg.get());
@@ -92,6 +118,9 @@ public:
 private:
   rclcpp::Subscription<rmw_serialized_message_t>::SharedPtr sub_;
   
+  // is_rand_int_count_set checks if the counter has been set
+  bool is_rand_int_counter_set = false;
+  int rand_int_counter;
   int msg_counter = 0;
 };
 
