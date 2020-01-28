@@ -85,9 +85,7 @@ public:
 	// change the last byte to x00 byte so that hmac can be 
 	// computed correctly
         int last_idx = msg->buffer[0] - 1;
-	printf("Listener: last_idx content before change: %02x\n", msg->buffer[last_idx]);
 	msg->buffer[last_idx] = (unsigned char) 0;
-	printf("Listener: last_idx, content: %d, %02x\n", last_idx, msg->buffer[last_idx]);
 
         // The rmw_deserialize function takes the serialized data and a corresponding typesupport
         // which is responsible on how to convert this data into a ROS2 message.

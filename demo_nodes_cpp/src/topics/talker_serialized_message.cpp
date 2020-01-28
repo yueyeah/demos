@@ -110,10 +110,7 @@ public:
 	
 	// change the last byte to the rand_int_counter
 	int last_idx = serialized_msg_.buffer_length - 1;
-	printf("Talker: last byte before changing: %02x\n", serialized_msg_.buffer[last_idx]);
 	memcpy(&serialized_msg_.buffer[last_idx], &rand_int_counter, 1);
-	printf("Talker: rand_int_counter: %d, %02x\n", rand_int_counter, rand_int_counter);
-	printf("Talker: rand_int at last_idx: %d, %02x\n", serialized_msg_.buffer[last_idx], serialized_msg_.buffer[last_idx]);
 	// increment the rand_int_counter for the next iteration
 	rand_int_counter++;
 	rand_int_counter %= 256;
@@ -122,7 +119,6 @@ public:
         printf("ROS message:");
         printf("%s\n", string_msg->data.c_str());
         // And after the corresponding binary representation
-        printf("serialized message buffer length: %ld\n", serialized_msg_.buffer_length);
         for (size_t i = 0; i < serialized_msg_.buffer_length; ++i) {
           printf("%02x ", serialized_msg_.buffer[i]);
         }
