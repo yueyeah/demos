@@ -95,15 +95,15 @@ public:
           return;
 	
         }
-	// counts up till fixed number of messages
-	msg_counter++;
-	if (msg_counter == 999) {
-		rclcpp::shutdown();
-	}
-
-
+        
         // Finally print the ROS2 message data
         std::cout << "serialized data after deserialization: " << string_msg->data << std::endl;
+	msg_counter++;
+	if (msg_counter == 100000) { // 100 thousand
+          rclcpp::shutdown();
+	}
+        printf("Listener msg_counter: %d\n", msg_counter);
+
       };
 
     // Create a subscription to the topic which can be matched with one or more compatible ROS
@@ -119,6 +119,7 @@ private:
   // is_rand_int_count_set checks if the counter has been set
   bool is_rand_int_counter_set = false;
   int rand_int_counter;
+  int first_msg;
   int msg_counter = 0;
 };
 
@@ -138,17 +139,17 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
 
   // Parse the command line options.
-  auto topic = std::string("chatter");
+  auto topic0 = std::string("chatter0");
   if (rcutils_cli_option_exist(argv, argv + argc, "-t")) {
-    topic = std::string(rcutils_cli_get_option(argv, argv + argc, "-t"));
+    topic0 = std::string(rcutils_cli_get_option(argv, argv + argc, "-t"));
   }
 
   // Create a node.
-  auto node = std::make_shared<SerializedMessageListener>(topic);
+  auto listener_node = std::make_shared<SerializedMessageListener>(topic0);
 
   // spin will block until work comes in, execute work as it becomes available, and keep blocking.
   // It will only be interrupted by Ctrl-C.
-  rclcpp::spin(node);
+  rclcpp::spin(listener_node);
 
   rclcpp::shutdown();
   return 0;

@@ -59,10 +59,13 @@ public:
       throw std::runtime_error("failed to initialize serialized message");
     }
 
+    rclcpp::QoS qos(rclcpp::KeepLast(7));
+    pub_ = this->create_publisher<std_msgs::msg::String>(topic_name, qos);
+
+  }
+
     // Create a function for when messages are to be sent.
-    auto publish_message =
-      [this]() -> void
-      {
+    void publish_message(void) {
         printf("\nTalker publishing:\n");
         // In this example we send a std_msgs/String as serialized data.
         // This is the manual CDR serialization of a string message with the content of
@@ -126,20 +129,10 @@ public:
 
         pub_->publish(serialized_msg_);
 
-	// stops emitting messages after a fixed number
-	if (count_ == 1000) {
-		rclcpp::shutdown();	
+	if (count_ == 200000) { // 200 thousand
+          rclcpp::shutdown();
 	}
-
-      };
-
-    rclcpp::QoS qos(rclcpp::KeepLast(7));
-    pub_ = this->create_publisher<std_msgs::msg::String>(topic_name, qos);
-
-    // Use a timer to schedule periodic message publishing.
-    timer_ = this->create_wall_timer(1s, publish_message);
-  }
-
+      }
   ~SerializedMessageTalker()
   {
     auto ret = rmw_serialized_message_fini(&serialized_msg_);
@@ -177,18 +170,20 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
 
   // Parse the command line options.
-  auto topic = std::string("chatter");
+  auto topic0 = std::string("chatter0");
   if (rcutils_cli_option_exist(argv, argv + argc, "-t")) {
-    topic = std::string(rcutils_cli_get_option(argv, argv + argc, "-t"));
+    topic0 = std::string(rcutils_cli_get_option(argv, argv + argc, "-t"));
   }
 
   // Create a node.
-  auto node = std::make_shared<SerializedMessageTalker>(topic);
+  auto talker_node = std::make_shared<SerializedMessageTalker>(topic0);
 
-  // spin will block until work comes in, execute work as it becomes available, and keep blocking.
-  // It will only be interrupted by Ctrl-C.
-  rclcpp::spin(node);
+  while (true) { 
+    talker_node->publish_message();
 
+    // spin will block until work comes in, execute work as it becomes available, and keep blocking.
+    // It will only be interrupted by Ctrl-C.
+  }
   rclcpp::shutdown();
   return 0;
 }
