@@ -72,7 +72,7 @@ public:
         std::cout << "serialized data after deserialization: " << string_msg->data << std::endl;
 
 	msg_counter++;
-	if (msg_counter == 500000) { // 500 thousand
+	if (msg_counter == 100000) { // 500 thousand
 		rclcpp::shutdown();
 	}
 	printf("Listener msg_counter: %d\n", msg_counter);

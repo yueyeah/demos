@@ -156,7 +156,7 @@ int main(int argc, char * argv[])
   auto node = std::make_shared<SerializedMessageTalker>(topic);
 
   // Publishing loop
-  while (node->count_ < 600000) { // 600 thousand
+  while (node->count_ < 200000) { // 200 thousand
     node->publish_message();
   }
 
