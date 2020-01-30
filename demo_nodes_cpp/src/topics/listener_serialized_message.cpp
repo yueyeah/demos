@@ -45,16 +45,16 @@ public:
     // message to the callback. We can then further deserialize it and convert it into
     // a ros2 compliant message.
     auto callback =
-      [](const std::shared_ptr<rmw_serialized_message_t> msg) -> void
+      [this](const std::shared_ptr<rmw_serialized_message_t> msg) -> void
       {
         // Print the serialized data message in HEX representation
         // This output corresponds to what you would see in e.g. Wireshark
         // when tracing the RTPS packets.
-        std::cout << "I heard data buffer of length: " << msg->buffer_length << std::endl;
-        /*for (size_t i = 0; i < msg->buffer_length; ++i) {
+        std::cout << "I heard data of length: " << msg->buffer_length << std::endl;
+        for (size_t i = 0; i < msg->buffer_length; ++i) {
           printf("%02x ", msg->buffer[i]);
         }
-        printf("\n");*/
+        printf("\n");
 
         // In order to deserialize the message we have to manually create a ROS2
         // message in which we want to convert the serialized data.
@@ -65,12 +65,17 @@ public:
         // which is responsible on how to convert this data into a ROS2 message.
         auto ret = rmw_deserialize(msg.get(), string_ts, string_msg.get());
         if (ret != RMW_RET_OK) {
-	  printf("listener failed to deserialize serialized message\n");
           fprintf(stderr, "failed to deserialize serialized message\n");
           return;
         }
         // Finally print the ROS2 message data
         std::cout << "serialized data after deserialization: " << string_msg->data << std::endl;
+
+	msg_counter++;
+	if (msg_counter == 500000) { // 500 thousand
+		rclcpp::shutdown();
+	}
+	printf("Listener msg_counter: %d\n", msg_counter);
       };
 
     // Create a subscription to the topic which can be matched with one or more compatible ROS
@@ -82,6 +87,7 @@ public:
 
 private:
   rclcpp::Subscription<rmw_serialized_message_t>::SharedPtr sub_;
+  int msg_counter = 0; 
 };
 
 int main(int argc, char * argv[])

@@ -53,14 +53,13 @@ public:
       initial_capacity,
       &allocator);
     if (ret != RCL_RET_OK) {
-      printf("failed to initialise serialized message");
       throw std::runtime_error("failed to initialize serialized message");
     }
 
-    // Create a function for when messages are to be sent.
-    auto publish_message =
-      [this]() -> void
-      {
+    rclcpp::QoS qos(rclcpp::KeepLast(7));
+    pub_ = this->create_publisher<std_msgs::msg::String>(topic_name, qos);
+  }
+    void publish_message(void) {
         // In this example we send a std_msgs/String as serialized data.
         // This is the manual CDR serialization of a string message with the content of
         // Hello World: <count_> equivalent to talker example.
@@ -97,7 +96,7 @@ public:
         // its binary representation (serialized_msg)
         ret = rmw_serialize(string_msg.get(), string_ts, &serialized_msg_);
         if (ret != RMW_RET_OK) {
-          fprintf(stderr, "talker_serialized_message: failed to serialize serialized message\n");
+          fprintf(stderr, "failed to serialize serialized message\n");
           return;
         }
 
@@ -105,21 +104,14 @@ public:
         printf("ROS message:\n");
         printf("%s\n", string_msg->data.c_str());
         // And after the corresponding binary representation
-        printf("serialized message buffer length: %ld\n", serialized_msg_.buffer_length);
-/*        for (size_t i = 0; i < serialized_msg_.buffer_length; ++i) {
+        printf("serialized message:\n");
+        for (size_t i = 0; i < serialized_msg_.buffer_length; ++i) {
           printf("%02x ", serialized_msg_.buffer[i]);
-        }*/
+        }
         printf("\n");
 
         pub_->publish(serialized_msg_);
-      };
-
-    rclcpp::QoS qos(rclcpp::KeepLast(7));
-    pub_ = this->create_publisher<std_msgs::msg::String>(topic_name, qos);
-
-    // Use a timer to schedule periodic message publishing.
-    timer_ = this->create_wall_timer(1s, publish_message);
-  }
+      }
 
   ~SerializedMessageTalker()
   {
@@ -129,8 +121,9 @@ public:
     }
   }
 
+  size_t count_ = 0;
+
 private:
-  size_t count_ = 1;
   rcl_serialized_message_t serialized_msg_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
@@ -162,9 +155,10 @@ int main(int argc, char * argv[])
   // Create a node.
   auto node = std::make_shared<SerializedMessageTalker>(topic);
 
-  // spin will block until work comes in, execute work as it becomes available, and keep blocking.
-  // It will only be interrupted by Ctrl-C.
-  rclcpp::spin(node);
+  // Publishing loop
+  while (node->count_ < 600000) { // 600 thousand
+    node->publish_message();
+  }
 
   rclcpp::shutdown();
   return 0;
